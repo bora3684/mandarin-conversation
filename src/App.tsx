@@ -12,13 +12,13 @@ import Phrasebook from './components/Phrasebook'
 export default function App() {
   const { state, update, setPhraseState } = usePrototypeState()
   const transitionKey = state.screen === 'onboarding' ? `${state.screen}-${state.onboardingStep}` : state.screen
-  return <AppShell screen={state.screen} onHome={state.screen === 'intro' || state.screen === 'onboarding' ? undefined : () => update({ screen: 'home' })}>
+  return <AppShell screen={state.screen} onHome={state.screen === 'intro' || state.screen === 'placement' || state.screen === 'onboarding' ? undefined : () => update({ screen: 'home' })}>
     <AnimatePresence mode="wait" initial={false}>
-      <Fade key={transitionKey}>
-        {state.screen === 'intro' && <Intro onStart={() => update({ screen: 'onboarding' })} />}
+      <Fade key={transitionKey} slide={state.screen !== 'level'}>
+        {state.screen === 'intro' && <Intro onStart={() => update({ screen: 'onboarding', onboardingStep: 0 })} />}
         {state.screen === 'onboarding' && <Onboarding state={state} update={update} />}
         {state.screen === 'home' && <Home state={state} update={update} />}
-        {state.screen === 'placement' && <Placement onBack={() => update({ screen: 'home' })} onPass={() => update({ screen: 'level', hasStarted: true, placementPassed: true, activity: 'practice', phraseIndex: 0, attemptCount: 0 })} onStart={() => update({ screen: 'level', hasStarted: true, placementPassed: false, activity: 'learn', phraseIndex: 0, attemptCount: 0 })} />}
+        {state.screen === 'placement' && <Placement onBack={() => update({ screen: 'onboarding', onboardingStep: 1 })} onComplete={passed => update({ screen: 'home', placementPassed: passed })} onSkip={() => update({ screen: 'home', placementPassed: false })} />}
         {state.screen === 'phrasebook' && <Phrasebook state={state} onBack={() => update({ screen: 'home' })} />}
         {state.screen === 'level' && <LevelOne state={state} update={update} setPhraseState={setPhraseState} />}
       </Fade>

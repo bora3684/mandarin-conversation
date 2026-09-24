@@ -11,14 +11,6 @@ export default function Onboarding({ state, update }: Props) {
   const connectorChosen = state.goal === goals[1]
 
   return <div className="onboarding">
-    <div className="onboarding-side">
-      <p className="eyebrow">MANDARIN CONVERSATION</p>
-      <div className="onboarding-side-content">
-        <span className="onboarding-hanzi">你好。</span>
-        <h2>Words for the conversations that matter.</h2>
-      </div>
-      <div className="side-bottom"><span>0{step + 1} / 02</span><span className="side-line" /></div>
-    </div>
     <section className="onboarding-main">
       <div className="step-indicator"><span>{step === 0 ? 'YOUR REASON' : 'YOUR FIRST CONVERSATION'}</span><span>0{step + 1} / 02</span></div>
       <p className="eyebrow coral-text">{step === 0 ? 'START HERE' : 'MAKE IT REAL'}</p>
@@ -31,10 +23,10 @@ export default function Onboarding({ state, update }: Props) {
         </button>)}
       </div>
       {step === 0 && state.goal && !connectorChosen && <p className="selection-note">The first prototype path is for speaking with someone important to you.</p>}
-      {step === 1 && <label className="name-field">What should we call you? <span>OPTIONAL</span><input value={state.name} onChange={event => update({ name: event.target.value })} placeholder="Your first name" /></label>}
+      {step === 1 && <label className="name-field">What should we call you? <span>REQUIRED</span><input value={state.name} onChange={event => update({ name: event.target.value })} placeholder="Your first name" required maxLength={40} /></label>}
       <div className="onboarding-actions">
         {step === 1 && <button className="text-button" onClick={() => update({ onboardingStep: 0 })}><ArrowLeft01Icon size={18} /> Back</button>}
-        <button className="primary-button" onClick={() => step === 0 ? update({ onboardingStep: 1 }) : update({ screen: 'home' })} disabled={!selected || (step === 0 && !connectorChosen)}>{step === 0 ? 'Continue' : 'See my path'} <ArrowRight01Icon size={19} /></button>
+        <button className="primary-button" onClick={() => step === 0 ? update({ onboardingStep: 1 }) : update({ screen: 'placement', name: state.name.trim() })} disabled={!selected || (step === 0 && !connectorChosen) || (step === 1 && !state.name.trim())}>{step === 0 ? 'Continue' : 'Continue'} <ArrowRight01Icon size={19} /></button>
       </div>
     </section>
   </div>
