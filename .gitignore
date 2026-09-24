@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.DS_Store
+.env
+.env.*
+!.env.example
+Mandarin_Conversation_App_Codex_Prompt.md
