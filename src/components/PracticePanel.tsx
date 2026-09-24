@@ -1,5 +1,6 @@
-import { Mic01Icon, RefreshIcon } from 'hugeicons-react'
+import { CheckmarkCircle02Icon, Mic01Icon, RefreshIcon } from 'hugeicons-react'
 import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import type { Phrase } from '../types'
 import PhraseAudioButton from './PhraseAudioButton'
 
@@ -9,10 +10,10 @@ type Props = {
   phrase: Phrase
   mode: Mode
   attemptCount: number
-  onSuccess: () => void
+  onSuccess: (heard: string) => void
   onAttempt: () => void
   onHelp: () => void
-  onContinue: () => void
+  onContinue: (heard: string) => void
 }
 
 export default function PracticePanel({ phrase, mode, attemptCount, onSuccess, onAttempt, onHelp, onContinue }: Props) {
@@ -25,13 +26,36 @@ export default function PracticePanel({ phrase, mode, attemptCount, onSuccess, o
   const abortRef = useRef<AbortController | null>(null)
   const startedAtRef = useRef(0)
   const mountedRef = useRef(true)
+  const feedbackContextRef = useRef<AudioContext | null>(null)
+  const reduceMotion = useReducedMotion()
   const conversation = mode === 'conversation'
+
+  const playFeedback = (matched: boolean) => {
+    const context = feedbackContextRef.current
+    if (!context || context.state !== 'running') return
+    const notes = matched ? [[523, 0], [659, 0.13]] : [[349, 0], [294, 0.16]]
+    for (const [frequency, offset] of notes) {
+      const start = context.currentTime + offset
+      const oscillator = context.createOscillator()
+      const gain = context.createGain()
+      oscillator.type = 'sine'
+      oscillator.frequency.value = frequency
+      gain.gain.setValueAtTime(0, start)
+      gain.gain.linearRampToValueAtTime(0.045, start + 0.018)
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.19)
+      oscillator.connect(gain)
+      gain.connect(context.destination)
+      oscillator.start(start)
+      oscillator.stop(start + 0.2)
+    }
+  }
 
   useEffect(() => {
     mountedRef.current = true
     return () => {
       mountedRef.current = false
       abortRef.current?.abort()
+      void feedbackContextRef.current?.close()
       if (recorderRef.current?.state === 'recording') recorderRef.current.stop()
       streamRef.current?.getTracks().forEach(track => track.stop())
     }
@@ -57,6 +81,7 @@ export default function PracticePanel({ phrase, mode, attemptCount, onSuccess, o
       if (!response.ok) throw new Error(data.error || 'Transcription is unavailable right now.')
       if (!mountedRef.current) return
       setResult({ heard: data.heard, matchesPhrase: data.matchesPhrase })
+      playFeedback(!!data.heard && data.matchesPhrase)
       setStatus('result')
     } catch (error) {
       if (controller.signal.aborted || !mountedRef.current) return
@@ -70,6 +95,10 @@ export default function PracticePanel({ phrase, mode, attemptCount, onSuccess, o
   const startRecording = async () => {
     setResult(null)
     setMessage('')
+    if (typeof AudioContext !== 'undefined') {
+      feedbackContextRef.current ??= new AudioContext()
+      void feedbackContextRef.current.resume().catch(() => {})
+    }
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
       setMessage('This browser cannot record audio here. Try the localhost preview in Chrome.')
       setStatus('error')
@@ -106,11 +135,10 @@ export default function PracticePanel({ phrase, mode, attemptCount, onSuccess, o
   }
 
   return <div className={`practice-panel ${conversation ? 'conversation-practice' : ''}`}>
-    {!conversation && <><p className="eyebrow">SPEAKING PRACTICE</p><h2>Say it aloud.</h2><p>{phrase.situation}</p></>}
-    {(mode === 'practice' || showHelp) && <div className="practice-audio"><PhraseAudioButton phrase={phrase} /><span className="practice-pinyin">{phrase.pinyin}</span>{mode === 'practice' && <span className="practice-english">{phrase.english}</span>}</div>}
+    {mode === 'practice' ? <div className="practice-audio"><PhraseAudioButton phrase={phrase} /><span className="practice-pinyin">{phrase.pinyin}</span><span className="practice-english">{phrase.english}</span></div> : <AnimatePresence initial={false}>{showHelp && !(status === 'result' && result?.matchesPhrase) && <motion.div className="hint-reveal" initial={reduceMotion ? false : { height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: reduceMotion ? 0 : 0.32, ease: [0.22, 1, 0.36, 1] }}><div className="practice-audio"><span className="eyebrow">YOU COULD SAY</span><PhraseAudioButton phrase={phrase} /><span className="practice-pinyin">{phrase.pinyin}</span></div></motion.div>}</AnimatePresence>}
     <div className="record-area"><button className={`mic-button ${status === 'recording' ? 'recording' : ''}`} onClick={status === 'recording' ? stopRecording : startRecording} aria-label={status === 'recording' ? 'Stop recording' : 'Start recording'} disabled={status === 'processing'}><Mic01Icon size={29} strokeWidth={1.7} /></button><div><strong>{status === 'recording' ? 'Recording…' : status === 'processing' ? 'Listening to your words…' : 'Tap to speak'}</strong><span>{status === 'recording' ? 'Tap again when you finish' : 'Your clip is sent for transcription and is not saved'}</span></div></div>
-    {status === 'result' && <div className="practice-result" role="status"><p className="eyebrow">I HEARD</p><strong>{result?.heard || 'No clear words'}</strong>{!result?.heard ? <p>I could not make out speech. Try again in a quieter place.</p> : !result.matchesPhrase ? <p>I heard something different. Listen once more and try again if you like.</p> : null}<div className="practice-result-actions"><button className="outline-button" onClick={() => { setResult(null); setStatus('idle') }}><RefreshIcon size={17} /> Try again</button>{result?.matchesPhrase ? <button className="primary-button" onClick={onSuccess}>Continue</button> : <button className="text-button" onClick={onContinue}>Continue for now</button>}</div></div>}
-    {status === 'error' && <div className="practice-result" role="alert"><p>{message}</p><div className="practice-result-actions"><button className="outline-button" onClick={() => { setMessage(''); setStatus('idle') }}><RefreshIcon size={17} /> Try again</button><button className="text-button" onClick={onContinue}>Continue for now</button></div></div>}
-    <div className="practice-links">{mode !== 'practice' && !showHelp && <button onClick={() => { onHelp(); setShowHelp(true) }}>{conversation ? 'I need help' : 'Show the phrase'}</button>}{attemptCount > 0 && status === 'idle' && <span>Attempt {attemptCount + 1}</span>}</div>
+    {status === 'result' && <div className={`practice-result ${result?.matchesPhrase ? 'matched' : 'retry'}`} role="status"><p className="feedback-label">{result?.matchesPhrase ? <><CheckmarkCircle02Icon size={18} /> Correct</> : <><RefreshIcon size={17} /> {result?.heard ? 'Different words heard' : 'No clear words'}</>}</p><p className="eyebrow">I HEARD</p><strong>{result?.heard || '—'}</strong>{!result?.heard ? <p>I could not make out speech. Try again in a quieter place.</p> : !result.matchesPhrase ? <p>Listen once more and try again if you like.</p> : null}<div className="practice-result-actions"><button className="outline-button" onClick={() => { setResult(null); setStatus('idle') }}><RefreshIcon size={17} /> Try again</button>{result?.matchesPhrase ? <button className="primary-button" onClick={() => onSuccess(result.heard)}>Continue</button> : <button className="text-button" onClick={() => onContinue(result?.heard || '')}>Continue for now</button>}</div></div>}
+    {status === 'error' && <div className="practice-result" role="alert"><p>{message}</p><div className="practice-result-actions"><button className="outline-button" onClick={() => { setMessage(''); setStatus('idle') }}><RefreshIcon size={17} /> Try again</button><button className="text-button" onClick={() => onContinue('')}>Continue for now</button></div></div>}
+    <div className="practice-links">{mode !== 'practice' && !showHelp && status !== 'result' && <button onClick={() => { onHelp(); setShowHelp(true) }}>Hint</button>}{attemptCount > 0 && status === 'idle' && <span>Attempt {attemptCount + 1}</span>}</div>
   </div>
 }
