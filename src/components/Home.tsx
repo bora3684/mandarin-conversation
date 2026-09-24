@@ -1,4 +1,4 @@
-import { ArrowRight01Icon, BookOpen01Icon, CheckListIcon, CheckmarkCircle02Icon, ConversationIcon, HeartCheckIcon, LockKeyIcon, SmileIcon, TeaIcon, UserIcon } from 'hugeicons-react'
+import { ArrowRight01Icon, BookOpen01Icon, CheckListIcon, CheckmarkCircle02Icon, ConversationIcon, HeartCheckIcon, LockKeyIcon, TeaIcon, UserIcon } from 'hugeicons-react'
 import { useState } from 'react'
 import { levels, phrases } from '../data/connector'
 import type { PrototypeState } from '../types'
@@ -7,7 +7,7 @@ import { TypingText } from './animate-ui/TypingText'
 
 type Props = { state: PrototypeState; update: (patch: Partial<PrototypeState>) => void }
 
-const unitIcons = [SmileIcon, UserIcon, TeaIcon, ConversationIcon, HeartCheckIcon]
+const unitIcons = [BookOpen01Icon, UserIcon, TeaIcon, ConversationIcon, HeartCheckIcon]
 const previews = [
   'Greet someone, respond warmly, and ask a question back.',
   'Share your name and a little about your everyday life.',
