@@ -9,7 +9,7 @@ export type Phrase = {
   chunks: Chunk[]
 }
 export type PhraseState = 'learning' | 'practicing' | 'ready' | 'keep-practicing'
-export type Screen = 'intro' | 'onboarding' | 'home' | 'level'
+export type Screen = 'intro' | 'onboarding' | 'home' | 'level' | 'placement' | 'phrasebook'
 export type Activity = 'learn' | 'practice' | 'recall' | 'conversation' | 'complete'
 export type PrototypeState = {
   screen: Screen
@@ -24,4 +24,5 @@ export type PrototypeState = {
   phraseStates: Record<string, PhraseState>
   levelComplete: boolean
   hasStarted: boolean
+  placementPassed: boolean
 }

@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { phrases } from '../data/connector'
 import type { PrototypeState } from '../types'
 
-const storageKey = 'mandarin-conversation-prototype-v3'
+const storageKey = 'mandarin-conversation-prototype-v4'
 const initialState: PrototypeState = {
   screen: 'intro', onboardingStep: 0, goal: '', situation: '', name: '',
   activity: 'learn', phraseIndex: 0, attemptCount: 0, usedSupport: false,
   phraseStates: Object.fromEntries(phrases.map(phrase => [phrase.id, 'learning'])), levelComplete: false,
   hasStarted: false,
+  placementPassed: false,
 }
 
 export function usePrototypeState() {

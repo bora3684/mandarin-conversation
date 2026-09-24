@@ -6,6 +6,8 @@ import { usePrototypeState } from './state/usePrototypeState'
 import { AnimatePresence } from 'motion/react'
 import { Fade } from './components/animate-ui/Fade'
 import Intro from './components/Intro'
+import Placement from './components/Placement'
+import Phrasebook from './components/Phrasebook'
 
 export default function App() {
   const { state, update, setPhraseState } = usePrototypeState()
@@ -16,6 +18,8 @@ export default function App() {
         {state.screen === 'intro' && <Intro onStart={() => update({ screen: 'onboarding' })} />}
         {state.screen === 'onboarding' && <Onboarding state={state} update={update} />}
         {state.screen === 'home' && <Home state={state} update={update} />}
+        {state.screen === 'placement' && <Placement onBack={() => update({ screen: 'home' })} onPass={() => update({ screen: 'level', hasStarted: true, placementPassed: true, activity: 'practice', phraseIndex: 0, attemptCount: 0 })} onStart={() => update({ screen: 'level', hasStarted: true, placementPassed: false, activity: 'learn', phraseIndex: 0, attemptCount: 0 })} />}
+        {state.screen === 'phrasebook' && <Phrasebook state={state} onBack={() => update({ screen: 'home' })} />}
         {state.screen === 'level' && <LevelOne state={state} update={update} setPhraseState={setPhraseState} />}
       </Fade>
     </AnimatePresence>
