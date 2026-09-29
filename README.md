@@ -6,6 +6,17 @@ The React app runs alongside a local Cloudflare Worker API. The Worker exposes `
 
 ## Run locally
 
+To edit the app without a Cloudflare connection:
+
+```bash
+npm install
+npm run dev:local
+```
+
+Open the localhost URL printed by Vite. This starts the React app only; speaking practice needs the Cloudflare Worker API and is unavailable in this mode. No deployment occurs.
+
+To run the app with the speech API:
+
 ```bash
 npm install
 npm run dev

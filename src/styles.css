@@ -259,10 +259,13 @@ body{min-width:0;overflow-x:clip}
 @media(max-width:620px){.phrasebook-layout{grid-template-columns:1fr}.phrasebook-list{grid-template-columns:repeat(2,minmax(0,1fr))}.placement-work{padding:24px 17px}.placement-progress{margin-bottom:22px}}
 
 /* Persistent lesson outline with live progress. */
+.level-shell .site-header{position:fixed;top:0;left:0;right:0;height:66px;z-index:6;padding-inline:max(58px,calc((100vw - 1600px)/2 + 58px));background:#f7f4ec}
+.level-shell main{padding-top:66px}
 .level-page{width:min(860px,calc(100vw - 420px));margin-inline:auto}
 .lesson-layout{display:block;transition:none}
-.lesson-layout .lesson-aside{position:fixed;left:0;top:66px;bottom:0;z-index:5;width:200px;min-width:200px;max-height:none;padding:0;overflow-y:auto;background:#e8e2f4;border-radius:0}
+.lesson-layout .lesson-aside{position:fixed;left:0;top:66px;bottom:0;z-index:5;width:200px;min-width:200px;max-height:none;padding:0;overflow-y:hidden;background:#e8e2f4;border-radius:0}
 .lesson-layout .outline-details{min-height:100%;padding:30px 18px 24px;display:flex;flex-direction:column}
+@media (max-height:700px){.lesson-layout .lesson-aside{overflow-y:auto}}
 .lesson-layout .outline-details h1{font-size:23px;line-height:1.17;margin:15px 0 10px}
 .lesson-layout .outline-details>p{font-size:12px;line-height:1.45}
 .lesson-layout .lesson-steps{margin-top:22px}
