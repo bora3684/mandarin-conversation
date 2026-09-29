@@ -303,6 +303,8 @@ body{min-width:0;overflow-x:clip}
 .practice-pinyin{font-size:16px;font-weight:700;color:#d66b55}
 .practice-english{font-size:14px;color:#56616a}
 .wordmark{font-size:32px;letter-spacing:-1.4px}
+.wordmark,.intro-brand{display:inline-flex;align-items:center;gap:10px}
+.wordmark img,.intro-brand img{width:32px;height:32px;display:block}
 .intro-brand{font:800 30px/1 'Manrope Variable',sans-serif;letter-spacing:-1.3px;text-transform:none}
 .activity-heading h2{margin:0 0 22px}
 .practice-situation{font-size:18px;font-weight:700;line-height:1.45;margin:0 0 12px}
